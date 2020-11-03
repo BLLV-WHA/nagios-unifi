@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import pprint
+
 import nagiosplugin
 
 from pyunifi.controller import Controller
@@ -19,6 +21,8 @@ class UnifiDevice(nagiosplugin.Resource):
                        ssl_verify=False)
         for ap in c.get_aps():
             if ap.get('name') == self._hostname:
+                #pp = pprint.PrettyPrinter(indent=4)
+                #pp.pprint(ap)
                 state = False
                 if ap['state'] == 1:
                     state = True
@@ -30,8 +34,20 @@ class UnifiDevice(nagiosplugin.Resource):
 @nagiosplugin.guarded
 def main():
     argp = argparse.ArgumentParser()
-    argp.add_argument('-H', '--hostname', help='name of the unifi device')
+    argp.add_argument('--hostname', help='name of the unifi device', required=True)
+    argp.add_argument('--metric', choices=['status', 'cpu', 'memory', 'speed', 'satisfaction'], help='metric to be measured', required=True)
+    argp.add_argument('--controller_host', help='address of unifi controller', required=True)
+    argp.add_argument('--controller_user', help='login user for the controller', required=True)
+    argp.add_argument('--controller_password', help='password for the controller', required=True)
+
+    argp.print_help()
     args = argp.parse_args()
+    print(args.hostname)
+    print(args.metric)
+    print(args.controller_host)
+    print(args.controller_user)
+    print(args.controller_password)
+
     check = nagiosplugin.Check(UnifiDevice(args.hostname))
     check.main()
 
