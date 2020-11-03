@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import nagiosplugin
 
@@ -31,7 +32,6 @@ def main():
     argp = argparse.ArgumentParser()
     argp.add_argument('-H', '--hostname', help='name of the unifi device')
     args = argp.parse_args()
-    print(args)
     check = nagiosplugin.Check(UnifiDevice(args.hostname))
     check.main()
 
