@@ -59,9 +59,11 @@ class UnifiDevice(nagiosplugin.Resource):
         return ap['uplink']['speed']
 
     def _get_satisfaction(self, ap):
-        print(ap['satisfaction'])
-        return ap['satisfaction']
-
+        satisfaction = ap['satisfaction']
+        # set satisfaction to 100 if no clients are connected to the ap
+        if satisfaction < 0:
+            satisfaction = 100
+        return satisfaction
 
 @nagiosplugin.guarded
 def main():
