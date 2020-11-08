@@ -22,3 +22,47 @@ optional arguments:
   -c CRITICAL, --critical CRITICAL
 
 ```
+
+## Metrics
+
+### status
+Type: boolean
+
+Overall status reported by the device.
+
+### cpu
+Type: float [0 - 100]
+
+Ourrent cpu usage of the device.
+
+### memory
+Type: float [0 - 100]
+
+Current memory usage of the device.
+
+### speed
+Type: int [0 - 1000]
+
+Current network connection speed of the device.
+
+### satisfaction
+Type: int [0 - 100]
+
+Overall user experience of all clients of the device.
+If no clients are detected a satisfaction of 100 is assumed.
+
+### temperature
+Type: float
+
+The temperatur of the device in C.
+
+### temperature
+Type: boolean
+
+Overheating reported by the device.
+
+### temperature
+Type: float [0 - 100]
+
+Percent value of the powerusage if the device.
+Calculated of the reported max power and the per port used power.
