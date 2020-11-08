@@ -1,9 +1,4 @@
 # Nagios Unifi Plugin
-
-rename config_example.py to config.py
-
-modify config.py to your needs
-
 ```
 usage: check_unifi.py [-h] --hostname HOSTNAME --metric {status,cpu,memory,speed,satisfaction,temperature,overheating,power_level} --controller_host CONTROLLER_HOST --controller_user CONTROLLER_USER --controller_password CONTROLLER_PASSWORD [-w WARNING] [-c CRITICAL]
 
