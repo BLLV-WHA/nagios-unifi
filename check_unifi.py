@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import argparse
+import json
+
 import nagiosplugin
 
 from enum import Enum
@@ -12,6 +14,9 @@ class Metrics(Enum):
     MEMORY = 'memory'
     SPEED = 'speed'
     SATISFACTION = 'satisfaction'
+    TEMPERATURE = 'temperature'
+    OVERHEATING = 'overheating'
+    POWER_LEVEL = 'power_level'
 
 
 class UnifiDevice(nagiosplugin.Resource):
@@ -40,6 +45,12 @@ class UnifiDevice(nagiosplugin.Resource):
                     return [nagiosplugin.Metric('speed', self._get_speed(ap), context='speed')]
                 elif self._metric == Metrics.SATISFACTION:
                     return [nagiosplugin.Metric('satisfaction', self._get_satisfaction(ap), context='satisfaction')]
+                elif self._metric == Metrics.TEMPERATURE:
+                    return [nagiosplugin.Metric('temperature', self._get_temperature(ap), context='temperature')]
+                elif self._metric == Metrics.OVERHEATING:
+                    return [nagiosplugin.Metric('overheating', self._get_overheating(ap), context='null')]
+                elif self._metric == Metrics.POWER_LEVEL:
+                    return [nagiosplugin.Metric('power_level', self._get_power_level(ap), context='power_level')]
 
         raise nagiosplugin.CheckError('unable to find specified device: {}'.format(self._hostname))
 
@@ -65,13 +76,30 @@ class UnifiDevice(nagiosplugin.Resource):
             satisfaction = 100
         return satisfaction
 
+    def _get_temperature(self, ap):
+        return ap['general_temperature']
+
+    def _get_overheating(self, ap):
+        return ap['overheating']
+
+    def _get_power_level(self, ap):
+        total_max_power = ap['total_max_power']
+        port_table = ap['port_table']
+        overall_power = 0.0
+        for port in port_table:
+            if 'poe_power' in port:
+                overall_power += float(port['poe_power'])
+        return round(100 / total_max_power * overall_power, 2)
+
+
 @nagiosplugin.guarded
 def main():
     argp = argparse.ArgumentParser()
     argp.add_argument('--hostname', help='name of the unifi device', required=True)
     argp.add_argument('--metric',
                       choices=[Metrics.STATUS.value, Metrics.CPU.value, Metrics.MEMORY.value,
-                               Metrics.SPEED.value, Metrics.SATISFACTION.value],
+                               Metrics.SPEED.value, Metrics.SATISFACTION.value, Metrics.TEMPERATURE.value,
+                               Metrics.OVERHEATING.value, Metrics.POWER_LEVEL.value],
                       help='metric to be measured', required=True)
     argp.add_argument('--controller_host', help='address of unifi controller', required=True)
     argp.add_argument('--controller_user', help='login user for the controller', required=True)
@@ -113,6 +141,22 @@ def main():
             nagiosplugin.ScalarContext('satisfaction', args.warning, args.critical)
         )
         check.main()
+    elif metric == Metrics.TEMPERATURE:
+        check = nagiosplugin.Check(
+            unifi_device,
+            nagiosplugin.ScalarContext('temperature', args.warning, args.critical)
+        )
+        check.main()
+    elif metric == Metrics.OVERHEATING:
+        check = nagiosplugin.Check(unifi_device)
+        check.main()
+    elif metric == Metrics.POWER_LEVEL:
+        check = nagiosplugin.Check(
+            unifi_device,
+            nagiosplugin.ScalarContext('power_level', args.warning, args.critical)
+        )
+        check.main()
+
 
 if __name__ == '__main__':
     main()
